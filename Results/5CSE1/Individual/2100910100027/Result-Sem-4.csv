@@ -1,0 +1,10 @@
+Code,Name,Type,Internal,External,Back Paper,Grade
+KAS402,Maths IV,Theory,30,58,--,C
+KVE401,Universal Human Values,Theory,40,48,--,C
+KCS401,Operating Systems,Theory,30,66,--,B
+KCS402,Theory of Automata and Formal Languages,Theory,33,46,--,C
+KCS403,Microprocessor,Theory,30,45,--,C
+KCS451,Operating Systems Lab,Practical,20,21,--,A
+KCS452,Microprocessor Lab,Practical,20,24,--,A
+KCS453,Python Language Programming Lab,Practical,22,24,--,A+
+KNC402,Python Programming,CA,22,35,--,
