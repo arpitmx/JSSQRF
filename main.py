@@ -1,5 +1,4 @@
 from tkinter import filedialog
-
 import capsolver
 import requests
 from bs4 import BeautifulSoup
@@ -37,8 +36,7 @@ def saveSemResultToCommonCSV(result):
     # print(data)
     csv_file_path = f"Results//{result.classcode}//Result-{result.classcode}.csv"
 
-    # Write data to the CSV file
-    with open(csv_file_path, 'a', newline='') as csv_file:
+    with open(csv_file_path, 'a') as csv_file:
         csv_writer = csv.writer(csv_file)
 
         if (not is_header_present(csv_file_path)):
@@ -60,6 +58,8 @@ def is_header_present(file_path):
             return isinstance(first_row[0], str)
         else:
             return False
+
+
 def readResultFromFile(student, keySem):
     classcode = student.classcode
     rollno = student.rollno
@@ -89,7 +89,6 @@ def readResultFromFile(student, keySem):
             saveToStudentCSV(classcode, rollno, semIdx, rows)
 
             if semIdx == keySem:
-
                 result = Result(classcode=classcode, name=student.name,
                                 sgpa=resultSGPAs[semIdx - 1].text,
                                 rollno=student.rollno,
@@ -97,7 +96,6 @@ def readResultFromFile(student, keySem):
                                 subjectData=str(rows))
                 print("Preparing to save required sem result in common csv..")
                 saveSemResultToCommonCSV(result)
-
 
             print(f"Semester {semIdx} Result Done..")
             semIdx = semIdx + 1
@@ -192,14 +190,19 @@ def getResultofStudent(index, student, sem):
                 readResultFromFile(student, sem)
                 print(f"Result saved successfully for {student.rollno}...\n")
                 print("------------------\n")
+                return "Done"
             else:
                 print(f"Failure : Invalid details for {student.rollno}...")
+                return "Failed"
+
 
         else:
             print(f"Failure : ${requests.status_codes}")
+            return "Failed"
 
     except Exception as e:
-            print(f"Problem : \n{e}")
+        print(f"Problem : \n{e}")
+        return "Failed"
 
 
 def checkExists(file_path):
@@ -242,31 +245,86 @@ class Result:
         self.subjectData = subjectData
 
 
+def read_csv_and_filter_status(input_file, status_to_filter):
+    filtered_list = []
+
+    with open(input_file, 'r', newline='') as csv_file:
+        csv_reader = csv.DictReader(csv_file)
+
+        for row in csv_reader:
+            if 'Status' in row and row['Status'] == status_to_filter:
+                filtered_list.append(row['Roll number'])
+
+    return filtered_list
+
+
+def delete_file(file_path):
+    try:
+        os.remove(file_path)
+
+    except OSError as e:
+        print("No log file, this is a new session..")
+
+
+
 def exec():
     index = 1
-    print("<==== JSS Result Scraper by Nibble Computer Society, CSE Dept. ====> \n")
+    doneRecords = []
+    success = 0
+
+    print("\n\n<==== JSS Quick Result Scraper (QRS) by Nibble Computer Society, CSE Dept. ====> \n")
+
     classcode = input("Class name (Ex: 5CS1) : ")
+    directoryPath = f"Results//{classcode}"
+    logFile = f"{directoryPath}//{classcode}-log.csv"
+
+    if not os.path.exists(directoryPath):
+        os.makedirs(directoryPath)
+
+    if (checkExists(logFile)):
+        print("Log file found.. will rerun on failed records..")
+        doneRecords = read_csv_and_filter_status(logFile, "Done")
+
     sem = int(input("Semester number (1-8) : "))
     print("Source CSV File : ", end="")
-    source = filedialog.askopenfilename(title="Select a source csv file", initialdir=os.getcwd(),
-                                        filetypes=[("Text files", "*.csv"), ("All files", "*.*")])
+
+    source = filedialog.askopenfilename(
+        title="Select a source csv file",
+        initialdir=os.getcwd(),
+        filetypes=[("Text files", "*.csv"), ("All files", "*.*")])
     print(source)
     print("\n")
 
     problems = getProblems(classcode, sem, source)
     if len(problems) == 0:
 
-        with open(source, 'r+') as csv_file:
+        delete_file(logFile)
+
+        with open(source, 'r+') as csv_file, open(logFile, 'w', newline='') as logfile:
             print("Getting results for ", classcode)
+
+            # Preparing csv file
             csv_reader = csv.reader(csv_file)
             next(csv_reader)
+
+            # Preparing log file
+            header = ['Roll number', 'Status']
+            csv_writer = csv.writer(logfile)
+            csv_writer.writerow(header)
+
             for row in csv_reader:
                 rollno, dob = row
-                student = Student(classcode, str(rollno), str(dob))
-                getResultofStudent(index, student, sem)
-                index = index + 1
-
-            print("\nSuccessfully got ",index, " results.")
+                if not doneRecords.__contains__(rollno):
+                    student = Student(classcode, str(rollno), str(dob))
+                    status = getResultofStudent(index, student, sem)
+                    csv_writer.writerow([rollno, status])
+                    index = index + 1
+                    success = success + 1
+                else:
+                    print(f"{index}: Skipping on {rollno} as already done..\n")
+                    csv_writer.writerow([rollno, 'Done'])
+                    index = index + 1
+            print("\nFetched ", success, " result.")
     else:
         for problem in problems:
             print(problem)
@@ -275,4 +333,5 @@ def exec():
 
 
 exec()
+
 
