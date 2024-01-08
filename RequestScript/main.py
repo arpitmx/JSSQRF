@@ -36,7 +36,7 @@ def saveSemResultToCommonCSV(result):
     # print(data)
     csv_file_path = f"Results//{result.classcode}//Result-{result.classcode}.csv"
 
-    with open(csv_file_path, 'a') as csv_file:
+    with open(csv_file_path, 'a', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
 
         if (not is_header_present(csv_file_path)):
@@ -46,7 +46,7 @@ def saveSemResultToCommonCSV(result):
 
 
 def is_header_present(file_path):
-    with open(file_path, 'r', newline='') as csvfile:
+    with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
         csvreader = csv.reader(csvfile)
 
         # Read the first row
@@ -64,7 +64,7 @@ def readResultFromFile(student, keySem):
     classcode = student.classcode
     rollno = student.rollno
 
-    with open(f"Results//{classcode}//Individual//{rollno}//{rollno}.html", "r") as file:
+    with open(f"Results//{classcode}//Individual//{rollno}//{rollno}.html", "r", encoding='utf-8') as file:
         content = file.read()
 
         htmlResponse = content
@@ -123,7 +123,7 @@ def saveHTMLFile(student):
     os.makedirs(directory, exist_ok=True)
     file_path = os.path.join(directory, f'{rollno}.html')
 
-    with open(file_path, "w+") as file:
+    with open(file_path, "w+",encoding='utf-8') as file:
         file.write(result)
 
 
@@ -248,7 +248,7 @@ class Result:
 def read_csv_and_filter_status(input_file, status_to_filter):
     filtered_list = []
 
-    with open(input_file, 'r', newline='') as csv_file:
+    with open(input_file, 'r', newline='', encoding='utf-8') as csv_file:
         csv_reader = csv.DictReader(csv_file)
 
         for row in csv_reader:
@@ -300,7 +300,7 @@ def exec():
 
         delete_file(logFile)
 
-        with open(source, 'r+') as csv_file, open(logFile, 'w', newline='') as logfile:
+        with open(source, 'r+', encoding='utf-8') as csv_file, open(logFile, 'w', newline='', encoding='utf-8') as logfile:
             print("Getting results for ", classcode)
 
             # Preparing csv file
@@ -333,5 +333,8 @@ def exec():
 
 
 exec()
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
