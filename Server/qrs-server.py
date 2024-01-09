@@ -6,8 +6,11 @@ from bs4 import BeautifulSoup
 import csv
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 
 currentFolder = os.getcwd()+"/NCS/QRS"
@@ -23,34 +26,49 @@ def saveSemResultToCommonCSV(result):
     rows = result.subjectData
     soup = BeautifulSoup(rows, 'html.parser')
 
-    headings = ["Roll No.", "Name", "Total Marks", "SGPA"]
-    data = [str(result.rollno), str(result.name), str(result.totalmarks), str(result.sgpa)]
-    # print("Total marks : ", result.totalmarks, "Total SGPA ", result.sgpa)
+    headings = ["Roll No.","Name","DOB", "Total Marks", "SGPA"]
+    subheading = ["","","","",""]
+    data = [str(result.rollno),str(result.dob),str(result.name), str(result.totalmarks), str(result.sgpa)]
+    print("Total marks : ", str(result.totalmarks), "Total SGPA ", result.sgpa)
 
     subname_pattern = 'subName'
     subjectNames = soup.find_all('span', id=lambda x: x and subname_pattern in x)
 
     for subName in subjectNames:
-        headings.append(str(subName.text))
+        if subName == subjectNames[0]:
+            headings.append(str(subName.text))
+            subheading.append("Ext")
+            subheading.append("Int")
+        else:
+            headings.append("")
+            headings.append(str(subName.text))
+            subheading.append("Ext")
+            subheading.append("Int")
 
     marks = soup.select('tr')
     for row in marks:
         cols = row.find_all(['td', 'th'])
+        print("Columns",cols)
         if cols[0].name == 'td':
             external_marks = cols[4].text.strip()
+            internal_marks = cols[3].text.strip()
             data.append(str(external_marks))
+            data.append(str(internal_marks))
 
     # print(data)
-    csv_file_path = f"{currentFolder}//Results//{result.classcode}//Result-{result.classcode}.csv"
+    csv_file_path = f"{currentFolder}//Results/{result.classcode}/Result-{result.classcode}.csv"
+
+    fileexists = checkExists(csv_file_path)
+    print("CSV Exists : ",fileexists)
 
     with open(csv_file_path, 'a', encoding='utf-8') as csv_file:
         csv_writer = csv.writer(csv_file)
 
-        if (not is_header_present(csv_file_path)):
+        if not fileexists or not is_header_present(csv_file_path):
             csv_writer.writerow(headings)
+            csv_writer.writerow(subheading)
 
         csv_writer.writerow(data)
-
 
 def is_header_present(file_path):
     with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
@@ -89,23 +107,30 @@ def readResultFromFile(student, keySem):
         resultSGPAs = soup.find_all('span', id=lambda x: x and sgpa_id_pattern in x)
         totalmarks = soup.find_all('span', id=lambda x: x and total_marks_id_pattern in x)
         print("Student name : ", student.name)
-        semIdx = 1
+        totalMarksIdx = 1
+        semIdx= 1
         for semester in semesters:
-            rows = semester.find_all('tr')
 
+
+            rows = semester.find_all('tr')
             saveToStudentCSV(classcode, rollno, semIdx, rows)
 
+            print('Total marks Debug:',totalmarks[totalMarksIdx].text)
+            #print('Total marks Debug Struct :', totalmarks )
+
             if semIdx == keySem:
+                totalmarksfinal = totalmarks[totalMarksIdx].text
                 result = Result(classcode=classcode, name=student.name,
                                 sgpa=resultSGPAs[semIdx - 1].text,
                                 rollno=student.rollno,
-                                totalmarks=totalmarks[semIdx + 1].text,
-                                subjectData=str(rows))
+                                totalmarks=totalmarksfinal,
+                                subjectData=str(rows), dob= student.dob)
                 print("Preparing to save required sem result in common csv..")
                 saveSemResultToCommonCSV(result)
 
             print(f"Semester {semIdx} Result Done..")
             semIdx = semIdx + 1
+            totalMarksIdx = totalMarksIdx + 2
 
 
 def saveToStudentCSV(classcode, rollno, sem, rows):
@@ -130,7 +155,7 @@ def saveHTMLFile(student):
     os.makedirs(directory, exist_ok=True)
     file_path = os.path.join(directory, f'{rollno}.html')
 
-    with open(file_path, "w+", encoding='utf-8') as file:
+    with open(file_path, "w+",encoding='utf-8') as file:
         file.write(result)
 
 
@@ -243,13 +268,15 @@ class Student:
 
 
 class Result:
-    def __init__(self, classcode, name, rollno, sgpa, totalmarks, subjectData):
+    def __init__(self, classcode, name, rollno, sgpa, totalmarks, subjectData, dob):
         self.classcode = classcode
         self.name = name
         self.rollno = rollno
         self.sgpa = sgpa
         self.totalmarks = totalmarks
         self.subjectData = subjectData
+        self.dob = dob
+
 
 
 def read_csv_and_filter_status(input_file, status_to_filter):
@@ -348,12 +375,12 @@ def helloworld():
 def fetch_results():
     try:
 
-        print("Got a request..", request.args.get('class_name'))
+        print("Got a request..", request.files)
 
-        class_name = request.args.get('class_name')
+        class_name = request.form['class_name']
         print(class_name)
 
-        semester_number = int(request.args.get('semester_number'))
+        semester_number = int(request.form['semester_number'])
         print(semester_number)
 
         sourcefile = request.files['source_csv_file']
@@ -417,7 +444,7 @@ def fetch_results():
         return jsonify({"success": 0, "message": f"Error: {str(e)}"})
 
 
-print("\n\nRunning QRS Server v1.5 ...")
+print("\n\nRunning QRS Server v2.0 No Cors ...")
 print("CWD : ",currentFolder)
 if not os.path.exists(currentFolder):
     os.makedirs(currentFolder)
