@@ -1,0 +1,229 @@
+body{
+    position: relative;
+}
+
+/****************** HEADER STYLES *******************/
+
+header{
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.college-info{
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 2rem;
+}
+
+.jss-logo-cont{
+    display: flex;
+    justify-content: center;
+}
+
+.jss-logo-cont img{
+    width: 11rem;
+    height: auto;
+}
+
+.college-text-cont{
+    max-width: 40rem;
+    min-width: 20rem;
+}
+
+.college-text-cont p{
+    text-align: center;
+}
+
+.college-text-cont p:nth-child(2){
+    color: #004999;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.college-text-cont p:nth-child(3){
+    color: #252525;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.affiliated-logos-cont{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.affiliated-logo-row{
+    display: flex;
+    gap: 1rem;
+}
+
+.affiliated-logo{
+    width: 5rem;
+}
+
+header h1{
+    background-color: #004999;
+    color: white;
+    text-align: center;
+    font-size: 2rem;
+}
+
+/******************* FORM STYLES *******************/
+
+main{
+    display: flex;
+    justify-content: center;
+    padding: 5rem 1rem;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+#form-info{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 30rem;
+    border-radius: 1rem;
+    background-color: #F7F7F7;
+    box-shadow: 0.25rem 0.25rem 0.5rem 0rem rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+}
+
+.label-text{
+    color: rgb(86, 86, 86);
+    display: block;
+}
+
+#class-name{
+    border-radius: 0.5rem;
+    background: #FFF;
+    padding: 0.5rem 1rem;
+    width: 100%;
+    border: 1px solid rgb(207, 207, 207);
+}
+
+#semester-input{
+    border-radius: 0.5rem;
+    padding: 0.7rem 1rem;
+    border: 1px solid rgb(207, 207, 207);
+    width: 100%;
+    cursor: pointer;
+}
+
+/* refer resets.css for editing file input button styling */
+#file-input{
+    width: 100%;
+    background-color: #e9e9e9;
+    cursor: pointer;
+    padding-right: 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(207, 207, 207);
+    transition: border 0.2s;
+}
+
+#file-input:hover{
+    border: 1px solid rgb(74, 74, 74);
+}
+
+#submit-btn{
+    border-radius: 0.5rem;
+    background-color: #0D6DFB;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 400;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#submit-btn:hover{
+    background-color: #1b23c8;
+}
+
+/********************* FOOTER STYLES **********************/
+
+footer{
+    position: absolute;
+    bottom: 0;
+    padding: 1rem;
+    width: 100%;
+}
+
+/********************* HIDDEN COMPONENTS STYLES *******************/
+
+#loader, #results{
+    display: none;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    max-width: 30rem;
+    border-radius: 1rem;
+    background-color: #ffffff;
+    box-shadow: 0.25rem 0.25rem 0.5rem 0rem rgba(0, 0, 0, 0.08);
+    padding: 2rem;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+#loader{
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+#loader img{
+    width: 5rem;
+    height: 5rem;
+    border-radius: 1rem;
+}
+
+#loader div{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 10rem;
+    max-width: 20rem;
+}
+
+#loader div p:first-child, #results p:first-child{
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+#results{
+    flex-direction: column;
+    align-items: center;
+    min-width: 15rem;
+}
+
+#save-btn{
+    border-radius: 0.5rem;
+    background-color: #2aa605;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 400;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#save-btn:hover{
+    background-color: #198905;
+}
+
+#overlay{
+    display: none;
+    background-color: #777777;
+    opacity: 0.7;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}

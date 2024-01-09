@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quick Result System</title>
+
+    <!-- reset useragent styling -->
+    <link rel="stylesheet" href="./stylesheets/index.css">
+    <!-- custom styling -->
+    <link rel="stylesheet" href="./stylesheets/resets.css">
+
+    <script src="./index.js" defer></script>
+</head>
+
+<body>
+    <header>
+        <section class="college-info">
+            <!-- College info section -->
+            <div class="jss-logo-cont">
+                <a href="https://jssaten.ac.in/"><img src="./images/jss.png" alt="jssaten logo"></a>
+            </div>
+            <div class="college-text-cont">
+                <p>JSS MAHAVIDYAPEETHA</p>
+                <p>JSS Academy Of Technical Education, Noida</p>
+                <p>Approved by All India Council for Technical Education (AICTE), New Delhi. UG programs are Accredited
+                    by National Board of Accreditation (NBA), New Delhi. Affiliated to Dr APJ Abdul Kalam Technical
+                    University, Uttar Pradesh, Lucknow</p>
+            </div>
+            <div class="affiliated-logos-cont">
+                <div class="affiliated-logo-row">
+                    <a href="https://www.nbaind.org/"><img class="affiliated-logo" src="./images/nba.png" alt="nba logo"></a>
+                    <a href="https://www.aicte-india.org/"><img class="affiliated-logo" src="./images/aicte.png" alt="aicte logo"></a>
+                </div>
+                <div class="affiliated-logo-row">
+                    <a href="https://www.nirfindia.org/Home"><img class="affiliated-logo" src="./images/nirf.png" alt="nirf logo"></a>
+                    <a href="https://www.topuniversities.com/qs-world-university-rankings"><img class="affiliated-logo" src="./images/qs.png" alt="qs logo"></a>
+                </div>
+            </div>
+        </section>
+        <h1>Quick Result System (QRS)</h1>
+    </header>
+    <main>
+        <form id="form-info" enctype="multipart/form-data">
+            <div>
+                <label for="class-name" class="label-text">
+                    Class Name
+                </label>
+                <input type="text" name="class_name" id="class-name" required />
+            </div>
+            <div>
+                <label for="semester-input" class="label-text">
+                    Semester
+                </label>
+                <select name="semester_number" id="semester-input" required>
+                    <option value=1>First</option>
+                    <option value=2>Second</option>
+                    <option value=3>Third</option>
+                    <option value=4>Fourth</option>
+                    <option value=5>Fifth</option>
+                    <option value=6>Sixth</option>
+                    <option value=7>Seventh</option>
+                    <option value=8>Eighth</option>
+                </select>
+            </div>
+            <input type="file" accept=".csv" id="file-input" name="source_csv_file" required />
+            <button type="submit" id="submit-btn">
+                Submit
+            </button>
+        </form>
+    </main>
+    <footer>
+        <p>Designed and Developed by <a href="#" target="_blank" rel="noopener noreferrer">Nibble Computer Society</a>
+        </p>
+    </footer>
+
+    <!-- hidden loader component -->
+    <div id="loader">
+        <div>
+            <p>Processing File...</p>
+            <p>Please wait while we process your file this might take 1-4 minutes depending on the number of students
+            </p>
+        </div>
+        <img src="./images/Hourglass.gif" alt="loader animation">
+    </div>
+
+    <!-- hidden results component -->
+    <div id="results">
+        <p>Results Recieved Succesfully</p>
+        <button type="button" id="save-btn">
+            Save Results
+        </button>
+    </div>
+
+    <!-- hidden overlay -->
+    <div id="overlay"></div>
+</body>
+
+</html>

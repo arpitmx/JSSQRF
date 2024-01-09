@@ -16,22 +16,34 @@ def saveSemResultToCommonCSV(result):
     rows = result.subjectData
     soup = BeautifulSoup(rows, 'html.parser')
 
-    headings = ["Roll No.", "Name", "Total Marks", "SGPA"]
-    data = [str(result.rollno), str(result.name), str(result.totalmarks), str(result.sgpa)]
-    # print("Total marks : ", result.totalmarks, "Total SGPA ", result.sgpa)
+    headings = ["Roll No.","Name","DOB", "Total Marks", "SGPA"]
+    subheading = ["","","","",""]
+    data = [str(result.rollno),str(result.dob),str(result.name), str(result.totalmarks), str(result.sgpa)]
+    print("Total marks : ", str(result.totalmarks), "Total SGPA ", result.sgpa)
 
     subname_pattern = 'subName'
     subjectNames = soup.find_all('span', id=lambda x: x and subname_pattern in x)
 
     for subName in subjectNames:
-        headings.append(str(subName.text))
+        if subName == subjectNames[0]:
+            headings.append(str(subName.text))
+            subheading.append("Ext")
+            subheading.append("Int")
+        else:
+            headings.append("")
+            headings.append(str(subName.text))
+            subheading.append("Ext")
+            subheading.append("Int")
 
     marks = soup.select('tr')
     for row in marks:
         cols = row.find_all(['td', 'th'])
+        print("Columns",cols)
         if cols[0].name == 'td':
             external_marks = cols[4].text.strip()
+            internal_marks = cols[3].text.strip()
             data.append(str(external_marks))
+            data.append(str(internal_marks))
 
     # print(data)
     csv_file_path = f"Results//{result.classcode}//Result-{result.classcode}.csv"
@@ -41,9 +53,9 @@ def saveSemResultToCommonCSV(result):
 
         if (not is_header_present(csv_file_path)):
             csv_writer.writerow(headings)
+            csv_writer.writerow(subheading)
 
         csv_writer.writerow(data)
-
 
 def is_header_present(file_path):
     with open(file_path, 'r', newline='', encoding='utf-8') as csvfile:
@@ -82,23 +94,30 @@ def readResultFromFile(student, keySem):
         resultSGPAs = soup.find_all('span', id=lambda x: x and sgpa_id_pattern in x)
         totalmarks = soup.find_all('span', id=lambda x: x and total_marks_id_pattern in x)
         print("Student name : ", student.name)
-        semIdx = 1
+        totalMarksIdx = 1
+        semIdx= 1
         for semester in semesters:
-            rows = semester.find_all('tr')
 
+
+            rows = semester.find_all('tr')
             saveToStudentCSV(classcode, rollno, semIdx, rows)
 
+            print('Total marks Debug:',totalmarks[totalMarksIdx].text)
+            #print('Total marks Debug Struct :', totalmarks )
+
             if semIdx == keySem:
+                totalmarksfinal = totalmarks[totalMarksIdx].text
                 result = Result(classcode=classcode, name=student.name,
                                 sgpa=resultSGPAs[semIdx - 1].text,
                                 rollno=student.rollno,
-                                totalmarks=totalmarks[semIdx + 1].text,
-                                subjectData=str(rows))
+                                totalmarks=totalmarksfinal,
+                                subjectData=str(rows), dob= student.dob)
                 print("Preparing to save required sem result in common csv..")
                 saveSemResultToCommonCSV(result)
 
             print(f"Semester {semIdx} Result Done..")
             semIdx = semIdx + 1
+            totalMarksIdx = totalMarksIdx + 2
 
 
 def saveToStudentCSV(classcode, rollno, sem, rows):
@@ -236,13 +255,14 @@ class Student:
 
 
 class Result:
-    def __init__(self, classcode, name, rollno, sgpa, totalmarks, subjectData):
+    def __init__(self, classcode, name, rollno, sgpa, totalmarks, subjectData, dob):
         self.classcode = classcode
         self.name = name
         self.rollno = rollno
         self.sgpa = sgpa
         self.totalmarks = totalmarks
         self.subjectData = subjectData
+        self.dob = dob
 
 
 def read_csv_and_filter_status(input_file, status_to_filter):
@@ -333,8 +353,4 @@ def exec():
 
 
 exec()
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
 
