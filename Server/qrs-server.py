@@ -323,8 +323,13 @@ def getSemResultsFromHTML(student):
 
         # Saving semester data, semester index, date of declaration, SGPA, totalmarks, full name, result status
         semesters = soup.find_all('table', id=lambda x: x and semester_id_pattern in x)
-        semesterIndexes = [int(span.text) for span in soup.find_all('span') if
+
+        semesterIndexes = [int(span.text) if span.text.strip() else -1 for span in soup.find_all('span') if
                            span.get('id') and span.get('id').endswith('_lblSemesterId')]
+
+        print("Semester indexes : ",semesterIndexes)
+
+
         dods = [span.text for span in soup.find_all('span') if
                 span.get('id') and span.get('id').endswith(semester_dod_patter)]
         resultSGPAs = [span.text for span in soup.find_all('span') if
@@ -380,37 +385,39 @@ def getSemResultsFromHTML(student):
         if studentFullname:
             student.name = studentFullname
             print("Student name : ", student.name)
-
+        print("Semesters total : ",len(semesters))
         spanIndex = 1
         semIdx = 0
-
         for semester in semesters:
-            print("Index : ", semIdx)
-            rows = semester.find_all('tr')
-            row_data = []
+            if semIdx < len(semesterIndexes):
+                print("Index : ", semIdx)
+                rows = semester.find_all('tr')
+                row_data = []
 
-            for row in rows:
-                columns = row.find_all(['th', 'td'])
-                row_data.append([column.text.strip() for column in columns])
+                for row in rows:
+                    columns = row.find_all(['th', 'td'])
+                    row_data.append([column.text.strip() for column in columns])
 
-            semResults[semesterIndexes[semIdx]] = {
-                SEM_TOTAL_MARKS: totalmarks[spanIndex].text,
-                SEM_DOD: dods[spanIndex],
-                SEM_RESULT_STATUS: result_status[spanIndex],
-                SEM_SGPA: resultSGPAs[semIdx],
-                SEM_SUBJECTWISE_MARKS: row_data,
-                SEM_RAW: semester,
-                SEMESTER_IND: semesterIndexes[semIdx]
-            }
+                semResults[semesterIndexes[semIdx]] = {
+                    SEM_TOTAL_MARKS: totalmarks[spanIndex].text,
+                    SEM_DOD: dods[spanIndex],
+                    SEM_RESULT_STATUS: result_status[spanIndex],
+                    SEM_SGPA: resultSGPAs[semIdx],
+                    SEM_SUBJECTWISE_MARKS: row_data,
+                    SEM_RAW: semester,
+                    SEMESTER_IND: semesterIndexes[semIdx]
+                }
 
-            for key, value in year_data.items():
-                if key.__contains__(str(semesterIndexes[semIdx])):
-                    print("Session:", key, " contains :", semesterIndexes[semIdx])
-                    print("Year data : ", value)
-                    semResults[semesterIndexes[semIdx]][YEAR_DATA] = value
+                for key, value in year_data.items():
+                    if key.__contains__(str(semesterIndexes[semIdx])):
+                        print("Session:", key, " contains :", semesterIndexes[semIdx])
+                        print("Year data : ", value)
+                        semResults[semesterIndexes[semIdx]][YEAR_DATA] = value
 
-            semIdx = semIdx + 1
-            spanIndex = spanIndex + 2
+                semIdx = semIdx + 1
+                spanIndex = spanIndex + 2
+
+
 
     return semResults
 
@@ -480,12 +487,12 @@ def createMasterMarksheetCSV(student_list):
 
 
 def testing():
-    studentx = Student(classcode="8thSemTest", rollno="1900910100001", dob="25/03/2001")
-    student2 = Student(classcode="8thSemTest", rollno="1900910100002", dob="07/01/2001")
-    student3 = Student(classcode="8thSemTest", rollno="1900910100003", dob="26/03/2000")
-    student4 = Student(classcode="8thSemTest", rollno="1900910100004", dob="26/03/2000")
-    student5 = Student(classcode="8thSemTest", rollno="1900910100005", dob="26/03/2000")
-    li = [studentx, student2, student3, student4, student5]
+    studentx = Student(classcode="3rdSemCE", rollno="2000910000011", dob="13/06/2003")
+    # student2 = Student(classcode="8thSemTest", rollno="1900910100002", dob="07/01/2001")
+    # student3 = Student(classcode="8thSemTest", rollno="1900910100003", dob="26/03/2000")
+    # student4 = Student(classcode="8thSemTest", rollno="1900910100004", dob="26/03/2000")
+    # student5 = Student(classcode="8thSemTest", rollno="1900910100005", dob="26/03/2000")
+    li = [studentx]
 
     for student in li:
         keySem = 3
@@ -516,17 +523,20 @@ def readAndSaveResultFromIndividualSavedHTMLFile(student, keySem):
 
 
     for sem in range(1, 9):
+
         semester = marksheet.get(sem)
-        semesterRaw = semester.get(SEM_RAW)
-        semResult = getResult(semester)
 
-        saveToStudentIndividualCSV(classcode=student.classcode, rows=semesterRaw.find_all('tr'), sem=sem,
-                                   rollno=student.rollno)
-        saveToStudentIndividualCommulativeCSV(classcode=student.classcode, semData=semester,
-                                              rows=semesterRaw.find_all('tr'), sem=sem, rollno=student.rollno)
+        if semester!=None:
+            semesterRaw = semester.get(SEM_RAW)
+            semResult = getResult(semester)
 
-        if sem == keySem:
-            saveSemResultToCommonCSV(student=student, marksheet=semResult)
+            saveToStudentIndividualCSV(classcode=student.classcode, rows=semesterRaw.find_all('tr'), sem=sem,
+                                       rollno=student.rollno)
+            saveToStudentIndividualCommulativeCSV(classcode=student.classcode, semData=semester,
+                                                  rows=semesterRaw.find_all('tr'), sem=sem, rollno=student.rollno)
+
+            if sem == keySem:
+                saveSemResultToCommonCSV(student=student, marksheet=semResult)
 
 
 
@@ -713,6 +723,9 @@ def fetch_results():
 
                 for row in csv_reader:
                     rollno, dob = row
+                    print("------")
+                    print("Roll number : ", rollno)
+                    print("DOB : ",dob)
                     if not doneRecords.__contains__(rollno):
 
                         student = Student(class_name, str(rollno), str(dob))
@@ -740,13 +753,13 @@ def fetch_results():
         return jsonify({"success": 0, "message": f"Error: {str(e)}"})
 
 
-print("\n\nRunning QRS Server v3.0 No Cors ...")
+print("\n\nRunning QRS Server v4.0 No Cors ...")
 print("CWD : ", currentFolder)
 
 if not os.path.exists(currentFolder):
     os.makedirs(currentFolder)
 
-#testing()
+# testing()
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
